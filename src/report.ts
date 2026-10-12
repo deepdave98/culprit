@@ -93,7 +93,7 @@ export function renderReport(report: Report): string {
   .brand span{display:block;margin:5px 0}
   .article-head{align-items:start;flex-direction:column}
   }
-  
+
   </style></head><body><main><header><div class="brand">Culprit<span>Local CSS regression evidence</span></div><a href="report.json">Machine-readable report ↗</a></header>
   <section class="summary"><div class="eyebrow">${escape(report.options.target)} · ${width} × ${height}</div><h1>${escape(report.state)}</h1>${report.reasons.map(reason => `<p>${escape(reason)}</p>`).join('')}
   <p class="muted urls">Baseline: ${escape(report.options.base)}<br>Candidate: ${escape(report.options.head)}</p>${metrics(report.difference)}</section>

@@ -1,6 +1,6 @@
 export type ResultState = 'Reproduced impact' | 'Candidate' | 'Inconclusive';
 export interface Rect { x: number; y: number; width: number; height: number }
-export interface Sheet { id: string; key: string; url: string; text: string }
+export interface Sheet { id: string; key: string; url: string; text: string; rules?: string[] }
 export interface RuleRange { sheetId: string; startLine: number; startColumn: number; endLine: number; endColumn: number }
 export interface Observation {
   png: Buffer;

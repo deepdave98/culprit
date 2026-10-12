@@ -45,11 +45,6 @@ export async function openSession(
       async setSheet(id, text) {
         if (!headers.has(id)) throw new Error(`Stylesheet ${id} is no longer present`);
         await cdp.send('CSS.setStyleSheetText', { styleSheetId: id, text });
-        // Let a paint follow style invalidation without disabling page animations.
-        await page.evaluate(() => new Promise<void>(resolve => {
-          document.documentElement.getBoundingClientRect();
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-        }));
       },
       async observe() {
         const state = await page.evaluate((selector) => {
@@ -163,12 +158,31 @@ export async function openSession(
             state.unsupported.push(`Unsupported or unreadable stylesheet: ${link.href}`);
             continue;
           }
+          let sheet: Sheet;
           try {
             const { text } = await cdp.send('CSS.getStyleSheetText', { styleSheetId: header.styleSheetId });
             const source = new URL(header.sourceURL);
-            sheets.push({ id: header.styleSheetId, key: `${index}:${source.pathname}${source.search}`, url: source.href, text });
+            sheet = { id: header.styleSheetId, key: `${index}:${source.pathname}${source.search}`, url: source.href, text };
+            sheets.push(sheet);
           } catch {
             state.unsupported.push(`Unreadable stylesheet: ${link.href}`);
+            continue;
+          }
+          try {
+            // CDP source text can omit insertRule/setProperty edits made through CSSOM.
+            const live = await page.evaluate(({ path, text }) => {
+              const sheet = document.querySelector<HTMLLinkElement>(path)?.sheet;
+              if (!sheet) throw new Error('Stylesheet disappeared during CSSOM audit');
+              const rules = [...sheet.cssRules].map(rule => rule.cssText);
+              const reference = new CSSStyleSheet();
+              reference.replaceSync(text);
+              const expected = [...reference.cssRules].map(rule => rule.cssText);
+              return { rules, matches: JSON.stringify(rules) === JSON.stringify(expected) };
+            }, { path: link.path, text: sheet.text });
+            sheet.rules = live.rules;
+            if (!live.matches) state.unsupported.push(`Live CSSOM differs from captured stylesheet source: ${sheet.url}`);
+          } catch {
+            state.unsupported.push(`Live CSSOM cannot be compared with captured stylesheet source: ${sheet.url}`);
           }
         }
         // Imported and constructed sheets have no supported link owner or source pairing.

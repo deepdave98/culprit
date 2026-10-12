@@ -2,7 +2,7 @@
 
 The engine asks whether restoring one changed value restores a selected appearance in a captured state. It does not infer the best fix or rank a unique cause.
 
-1. Open each local URL in an isolated Chromium context. Capture three times, then repeat in a fresh context. Compare pixels, DOM state, geometry, computed styles, and stylesheet text.
+1. Open each local URL in an isolated Chromium context. Capture three times, then repeat in a fresh context. Compare pixels, DOM state, geometry, computed styles, and stylesheet text. Audit live CSSOM rules against the source too: CDP source text alone can miss JavaScript `insertRule` changes.
 2. Pair external stylesheets by link order and URL path/query. Parse their CSS with PostCSS. Reject changes to stylesheet structure; identify value differences whose declarations belong to target or ancestor matched-rule ranges.
 3. Open a fresh candidate context and require its captures to match the original. Splice a single baseline value into the captured stylesheet text with `CSS.setStyleSheetText`. The sheet identity, rule order, selector, media context, and priority stay in place.
 4. Capture the edited page. Compare against the baseline and the original candidate. Restore the entire original sheet and verify that the browser returns to the original state before closing the context.

@@ -250,8 +250,9 @@ test('collateral stylesheet mutations cannot pass as a supported restoration', {
   assert.equal(report.candidate!.stable, true);
   assert.equal(report.experiments.length, 1);
   const forward = report.experiments[0]!.forward;
-  assert.equal(forward.capture!.stable, true);
-  assert.match(forward.error!, /Stylesheet state changed beyond the single intended value edit/);
+  // ResizeObserver may run before or during the first sample; both must reject the trial.
+  assert.ok(forward.capture);
+  assert.match(forward.error!, /Live CSSOM differs|Unstable experiment output|Stylesheet state changed beyond the single intended value edit/);
   assert.equal(forward.restored, false);
   assert.equal(await (await fetch(`${servers.head}/shared.css`)).text(), source);
 });

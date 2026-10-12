@@ -53,8 +53,9 @@ export function drift(a: Observation, b: Observation): string[] {
   if (a.dom !== b.dom) reasons.push('DOM or page state changed between captures.');
   if (JSON.stringify(a.layout) !== JSON.stringify(b.layout)) reasons.push('Layout changed between captures.');
   if (JSON.stringify(a.computed) !== JSON.stringify(b.computed)) reasons.push('Computed styles changed between captures.');
-  const sheets = (value: Observation) => JSON.stringify(value.sheets.map(({ key, text }) => ({ key, text })));
+  const sheets = (value: Observation) => JSON.stringify(value.sheets.map(({ key, text, rules }) => ({ key, text, rules })));
   if (sheets(a) !== sheets(b)) reasons.push('Stylesheet contents changed between captures.');
+  if (JSON.stringify(a.unsupported) !== JSON.stringify(b.unsupported)) reasons.push('Supported browser state changed between captures.');
   return reasons;
 }
 
