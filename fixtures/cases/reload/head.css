@@ -1,0 +1,8 @@
+/* Synthetic negative control: script sets element scroll state. */
+.action-clip {
+  width: 160px;
+  overflow: auto;
+}
+.checkout-button {
+  width: 240px;
+}

@@ -1,0 +1,8 @@
+/* Synthetic: budget must also account for the matched but overridden value. */
+.checkout-button {
+  padding: 14px 24px;
+  font-size: 14px;
+}
+.purchase-footer {
+  font-size: 12px;
+}

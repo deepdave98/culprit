@@ -1,0 +1,8 @@
+/* Synthetic: font size inherited by the button. */
+.purchase-footer {
+  font-size: 22px;
+}
+/* Square corners avoid Chromium's rounded-edge repaint history. */
+.checkout {
+  border-radius: 0;
+}

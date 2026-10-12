@@ -1,0 +1,7 @@
+/* Synthetic: custom property inherited from an ancestor. */
+.checkout {
+  --button-space: 24px;
+}
+.checkout-button {
+  padding-inline: var(--button-space);
+}

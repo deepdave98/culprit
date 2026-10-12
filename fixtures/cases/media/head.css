@@ -1,0 +1,6 @@
+/* Synthetic: active at the default 1280px viewport. */
+@media (min-width: 900px) {
+  .checkout-button {
+    border-radius: 24px;
+  }
+}

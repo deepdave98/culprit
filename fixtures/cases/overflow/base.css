@@ -1,0 +1,8 @@
+/* Synthetic: ancestor clips the selected button's paint. */
+.action-clip {
+  width: 160px;
+  overflow: visible;
+}
+.checkout-button {
+  width: 240px;
+}

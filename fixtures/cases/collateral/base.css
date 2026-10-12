@@ -1,0 +1,4 @@
+/* Synthetic negative control: a resize triggers a change in another sheet. */
+.checkout-button {
+  padding: 14px 24px;
+}

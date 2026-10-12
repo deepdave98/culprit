@@ -1,0 +1,4 @@
+/* Synthetic negative control: this selector matches no element. */
+.absent-element {
+  padding: 20px;
+}

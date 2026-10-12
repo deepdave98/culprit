@@ -1,0 +1,4 @@
+/* Synthetic negative control: the candidate disables this sheet. */
+.checkout-button {
+  padding: 14px 44px;
+}

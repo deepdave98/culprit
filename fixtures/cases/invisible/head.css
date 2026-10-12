@@ -1,0 +1,5 @@
+/* Synthetic negative control: no selected paint is visible. */
+.checkout-button {
+  opacity: 0;
+  padding: 14px 44px;
+}

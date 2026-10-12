@@ -1,0 +1,29 @@
+/* Synthetic checkout fixture. All assets are local. */
+* { box-sizing: border-box; }
+html { color: #27352e; background: #f4f2ec; font-family: Arial, sans-serif; }
+body { margin: 0; }
+main { width: 800px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 30px 0; border-bottom: 1px solid #d9ddd4; }
+header a { color: inherit; font-size: 18px; font-weight: 700; text-decoration: none; }
+header span { font-size: 11px; letter-spacing: 1.4px; }
+.fixture-heading { padding: 48px 0 30px; }
+.fixture-heading > p:first-child, .eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+h1 { margin: 10px 0 16px; font-size: 36px; font-weight: 500; letter-spacing: -1px; }
+.fixture-heading > p:last-child { color: #71786e; font-size: 13px; }
+.checkout { padding: 28px; background: #fffefb; border: 1px solid #d9ddd4; border-radius: 10px; }
+.order-heading { display: flex; justify-content: space-between; color: #797e74; font-size: 10px; letter-spacing: 1.4px; }
+.product { display: flex; align-items: center; gap: 24px; padding: 32px 0; border-bottom: 1px solid #e4e6df; }
+.product > strong { margin-left: auto; align-self: flex-start; font-size: 15px; }
+.product-art { width: 112px; height: 124px; display: grid; place-items: center; background: #eeefe7; border-radius: 5px; }
+.notebook { width: 64px; height: 89px; border-radius: 2px 6px 6px 2px; border-left: 5px solid #2f4636; background: #43614d; box-shadow: 4px 4px 0 #d9ddcf; transform: rotate(-7deg); }
+h2 { font-size: 20px; font-weight: 500; margin: 8px 0; }
+.product p { font-size: 12px; color: #727c70; }
+.product .eyebrow { font-size: 10px; }
+.quantity { margin-top: 24px; }
+.purchase-footer { display: flex; align-items: center; gap: 24px; padding-top: 28px; font-size: 14px; }
+.purchase-price { width: 172px; flex: 0 0 172px; }
+.purchase-price small { display: block; font-size: 10px; letter-spacing: 1.3px; color: #798174; margin-bottom: 9px; }
+.purchase-price strong { font-size: 22px; font-weight: 500; }
+.action-clip { flex: 0 0 auto; }
+.checkout-button { appearance: none; display: block; white-space: nowrap; padding: 14px 24px; color: #fffefb; background: #273f31; border: 1px solid transparent; border-radius: 5px; font: inherit; cursor: pointer; }
+footer { padding: 24px 0; color: #798174; font-size: 11px; }

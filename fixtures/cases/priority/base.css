@@ -1,0 +1,7 @@
+/* Synthetic: preserve declaration priority and cascade position. */
+.checkout-button {
+  background-color: #273f31 !important;
+}
+.checkout .checkout-button {
+  background-color: #617c68;
+}
