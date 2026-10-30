@@ -112,20 +112,20 @@ export async function compare(input: CompareOptions): Promise<Report> {
     report.declarations = changes.declarations;
     report.unsupported = [...new Set([...report.unsupported, ...changes.unsupported])];
     if (!baseline.capture.stable || !candidate.capture.stable) {
-      report.reasons.push('Unstable inputs: repeated captures or fresh loads disagree.');
+      report.reasons.push('Repeated captures or fresh page loads did not match.');
     } else if (report.unsupported.length) {
-      report.reasons.push('Unsupported input changes; no declaration experiments were run.');
+      report.reasons.push('Some changes are unsupported; CSS values were not tested.');
     } else if (initial.difference.targetPixels === 0) {
-      report.reasons.push('No selected visual difference was observed.');
+      report.reasons.push('No pixel difference was found in the selected area.');
     } else if (!changes.declarations.length) {
-      report.reasons.push('No supported changed declarations were found on the target or its ancestors.');
+      report.reasons.push('No testable CSS value changes matched the element or its ancestors.');
     } else {
       for (let i = 0; i < changes.declarations.length && report.budget.used < o.budget; i++) {
         const change = changes.declarations[i]!;
         const name = `experiment-${i + 1}`;
         const forward = await experiment(browser, report, change, 'forward', head, base, `${name}-forward`);
         const entry = { declarationId: change.id, state: 'Inconclusive' as Report['state'],
-          reason: 'The single declaration did not restore the selected appearance.', forward };
+          reason: 'This CSS value did not restore the element.', forward };
         report.experiments.push(entry);
         if (forward.error || !forward.difference) { entry.reason = forward.error ?? entry.reason; continue; }
         const restores = appearanceMatches(forward.difference);
@@ -133,7 +133,7 @@ export async function compare(input: CompareOptions): Promise<Report> {
           || forward.difference.targetGeometry < initial.difference.targetGeometry;
         if (improves || restores) {
           entry.state = 'Candidate';
-          entry.reason = restores ? 'Forward restoration matched; reverse verification is incomplete.' : 'Partial improvement; other declarations or unsupported dependencies may interact.';
+          entry.reason = restores ? 'Reverting the value matched before; the reverse test is incomplete.' : 'This value reduced the difference; other CSS values may also contribute.';
         }
         // Test the reverse for every supported trial while budget permits, including no-effect trials.
         if (report.budget.used < o.budget) {
@@ -144,7 +144,7 @@ export async function compare(input: CompareOptions): Promise<Report> {
             && forward.difference.surroundingPixels <= initial.difference.surroundingPixels
             && reverse.difference.surroundingPixels <= initial.difference.surroundingPixels) {
             entry.state = 'Reproduced impact';
-            entry.reason = 'Restoring this value matched the selected baseline appearance; the reverse edit matched the candidate appearance.';
+            entry.reason = 'Reverting this value matched before; applying it matched after.';
           }
         }
       }
@@ -153,17 +153,17 @@ export async function compare(input: CompareOptions): Promise<Report> {
       const incomplete = report.experiments.some(item => item.state === 'Candidate' && appearanceMatches(item.forward.difference!));
       const exhausted = report.experiments.length < changes.declarations.length
         || report.experiments.some(item => !item.reverse);
-      if (failed) report.reasons.push('At least one experiment was unstable, failed, or could not verify browser restoration.');
-      else if (exhausted) report.reasons.push('Experiment budget exhausted; verification is incomplete.');
+      if (failed) report.reasons.push('A test failed, changed between captures, or could not reset the browser.');
+      else if (exhausted) report.reasons.push('Edit budget exhausted before all tests finished.');
       else if (reproduced) {
         report.state = 'Reproduced impact';
-        report.reasons.push('A single declaration reproduced the selected difference in both directions in the captured state. This does not establish a unique cause or a general fix.');
+        report.reasons.push('Reverting and reapplying one CSS value reproduced both screenshots.');
       } else if (incomplete) {
         report.state = 'Candidate';
-        report.reasons.push('Forward restoration succeeded, but reverse verification did not establish reproduced impact.');
-      } else report.reasons.push('Single-declaration experiments did not restore and reproduce the selected appearance. Interacting causes are not resolved.');
+        report.reasons.push('Reverting a value matched before; applying it did not reproduce after.');
+      } else report.reasons.push('Single-value tests did not reproduce both screenshots. Interacting CSS values need further investigation.');
     }
-  } catch (error) { report.reasons.push(`Capture or experiment failed: ${error instanceof Error ? error.message : String(error)}`); }
+  } catch (error) { report.reasons.push(`Capture or CSS test failed: ${error instanceof Error ? error.message : String(error)}`); }
   finally { await browser?.close(); }
   report.budget.remaining = Math.max(0, o.budget - report.budget.used);
   await writeFile(join(o.out, 'report.json'), JSON.stringify(report, null, 2));

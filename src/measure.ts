@@ -46,7 +46,7 @@ export function measure(a: Observation, b: Observation, region: Rect): { differe
     targetGeometry: rectDelta(a.target, b.target), layoutNodes, maxLayoutDelta }, diff: PNG.sync.write(diff) };
 }
 
-// Exact equality is deliberate: tolerance would weaken the first milestone's evidence.
+// Compare every channel exactly so small changes stay visible.
 export function drift(a: Observation, b: Observation): string[] {
   const reasons: string[] = [];
   if (!a.png.equals(b.png)) reasons.push('Screenshot changed between captures.');

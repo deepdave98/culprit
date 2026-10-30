@@ -116,7 +116,7 @@ for (const name of ['unchanged', 'irrelevant'] as const) {
   test(`synthetic ${name}: does not invent a visual regression`, { timeout: 60_000 }, async () => {
     const report = await diagnose(name);
     assert.equal(report.state, 'Inconclusive');
-    assert.ok(report.reasons.some(reason => reason.includes('No selected visual difference')));
+    assert.ok(report.reasons.some(reason => reason.includes('No pixel difference')));
     assert.equal(report.difference!.totalPixels, 0);
     assert.equal(report.difference!.layoutNodes, 0);
     assert.deepEqual(report.experiments, []);
@@ -128,7 +128,7 @@ for (const name of ['unchanged', 'irrelevant'] as const) {
 test('synthetic unstable rendering is rejected before any experiment', { timeout: 60_000 }, async () => {
   const report = await diagnose('unstable');
   assert.equal(report.state, 'Inconclusive');
-  assert.ok(report.reasons.some(reason => reason.includes('Unstable inputs')));
+  assert.ok(report.reasons.some(reason => reason.includes('Repeated captures')));
   assert.equal(report.baseline!.stable, false);
   assert.ok(report.baseline!.instability.length > 0);
   assert.deepEqual(report.experiments, []);

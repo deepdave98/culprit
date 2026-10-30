@@ -7,7 +7,7 @@ try {
   const out = resolve('outputs/demo');
   const report = await compare({ base: `${servers.base}/spacing`, head: `${servers.head}/spacing`, target: '.checkout-button', out });
   console.log(`${report.state}: ${report.reasons.join(' ')}`);
-  console.log(`Synthetic demo report: ${out}/index.html`);
+  console.log(`Report: ${out}/index.html`);
   if (report.state !== 'Reproduced impact') process.exitCode = 1;
 } finally {
   await servers.close();

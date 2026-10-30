@@ -1,12 +1,12 @@
 {
   "name": "culprit-css",
   "version": "0.1.0",
-  "description": "Local CSS regression experiments for one selected element.",
+  "description": "Test which CSS changes made an element look different.",
   "type": "module",
   "license": "MIT",
   "author": "deepdave98",
   "bin": { "culprit": "dist/cli.js" },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["dist", "docs", "README.md", "LICENSE"],
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -4,15 +4,15 @@ const escape = (value: unknown) => String(value).replace(/[&<>"']/g, c => ({ '&'
 
 function restoration(trial: Trial): string {
   const status = trial.restored ? 'verified' : 'not verified';
-  return `Browser restoration: ${status}.${trial.reset ? ` <a href="${escape(trial.reset.evidence)}">Reset evidence</a>` : ''}`;
+  return `Browser reset: ${status}.${trial.reset ? ` <a href="${escape(trial.reset.evidence)}">Reset JSON</a>` : ''}`;
 }
 
 function metrics(value?: Difference): string {
   if (!value) return '<p class="muted">No valid measurement.</p>';
-  return `<dl><div><dt>Selected pixels changed</dt><dd>${value.targetPixels.toLocaleString('en-US')}</dd></div>
-    <div><dt>Pixels outside selection</dt><dd>${value.surroundingPixels.toLocaleString('en-US')}</dd></div>
-    <div><dt>Target geometry delta</dt><dd>${value.targetGeometry.toFixed(2)} px</dd></div>
-    <div><dt>Elements with changed bounds</dt><dd>${value.layoutNodes}</dd></div></dl>`;
+  return `<dl><div><dt>Changed pixels in target</dt><dd>${value.targetPixels.toLocaleString('en-US')}</dd></div>
+    <div><dt>Changed pixels outside target</dt><dd>${value.surroundingPixels.toLocaleString('en-US')}</dd></div>
+    <div><dt>Target size or position change</dt><dd>${value.targetGeometry.toFixed(2)} px</dd></div>
+    <div><dt>Elements moved or resized</dt><dd>${value.layoutNodes}</dd></div></dl>`;
 }
 
 export function renderReport(report: Report): string {
@@ -24,18 +24,18 @@ export function renderReport(report: Report): string {
     const box = (r: typeof rect, cls: string) => `<span class="box ${cls}" style="left:${100 * r.x / width}%;top:${100 * r.y / height}%;width:${100 * r.width / width}%;height:${100 * r.height / height}%"></span>`;
     return `<figure><figcaption>${escape(title)} <a href="${escape(capture.evidence)}">Capture JSON</a></figcaption>
       <a class="shot" href="${escape(capture.screenshot)}"><img src="${escape(capture.screenshot)}" alt="${escape(title)} screenshot" width="${width}" height="${height}">${region ? box(region, 'region') : ''}${box(rect, 'target')}</a>
-      <p class="muted">${capture.stable ? 'Stable in sampled captures' : 'Unstable'} · ${capture.samples.length} samples · x ${rect.x}, y ${rect.y}, ${rect.width} × ${rect.height}</p>
+      <p class="muted">${capture.stable ? 'Stable' : 'Unstable'} · ${capture.samples.length} samples · x ${rect.x}, y ${rect.y}, ${rect.width} × ${rect.height}</p>
       ${capture.instability.length ? `<p class="issue">${capture.instability.map(escape).join(' ')}</p>` : ''}</figure>`;
   }
   const experiments = report.experiments.map((item, index) => {
     const declaration = report.declarations.find(value => value.id === item.declarationId)!;
     return `<article><div class="article-head"><h2>${index + 1}. ${escape(declaration.property)}</h2><span class="status">${escape(item.state)}</span></div>
       <p>${escape(item.reason)}</p><div class="code"><code>${escape(declaration.context.join(' → '))}${declaration.context.length ? '<br>' : ''}${escape(declaration.selector)} {<br>&nbsp; ${escape(declaration.property)}: <del>${escape(declaration.candidate.value)}</del> → <ins>${escape(declaration.baseline.value)}</ins>${declaration.important ? ' !important' : ''};<br>}</code></div>
-      <p class="source">Candidate: ${escape(declaration.candidate.source.url)}:${declaration.candidate.source.line}:${declaration.candidate.source.column}<br>Baseline: ${escape(declaration.baseline.source.url)}:${declaration.baseline.source.line}:${declaration.baseline.source.column}</p>
-      <div class="comparison"><section><h3>Forward · candidate → baseline value</h3>${metrics(item.forward.difference)}
-      <p class="muted">Compared with baseline. ${restoration(item.forward)}</p>
-      ${item.forward.error ? `<p class="issue">${escape(item.forward.error)}</p>` : ''}${shot(item.forward.capture, 'Forward experiment')}</section>
-      <section><h3>Reverse · baseline → candidate value</h3>${item.reverse ? `${metrics(item.reverse.difference)}<p class="muted">Compared with candidate. ${restoration(item.reverse)}</p>${item.reverse.error ? `<p class="issue">${escape(item.reverse.error)}</p>` : ''}${shot(item.reverse.capture, 'Reverse experiment')}` : '<p class="muted">Not run. Verification is incomplete.</p>'}</section></div></article>`;
+      <p class="source">After: ${escape(declaration.candidate.source.url)}:${declaration.candidate.source.line}:${declaration.candidate.source.column}<br>Before: ${escape(declaration.baseline.source.url)}:${declaration.baseline.source.line}:${declaration.baseline.source.column}</p>
+      <div class="comparison"><section><h3>Revert the CSS value</h3>${metrics(item.forward.difference)}
+      <p class="muted">Compared with before. ${restoration(item.forward)}</p>
+      ${item.forward.error ? `<p class="issue">${escape(item.forward.error)}</p>` : ''}${shot(item.forward.capture, 'After reverting')}</section>
+      <section><h3>Apply the CSS value</h3>${item.reverse ? `${metrics(item.reverse.difference)}<p class="muted">Compared with after. ${restoration(item.reverse)}</p>${item.reverse.error ? `<p class="issue">${escape(item.reverse.error)}</p>` : ''}${shot(item.reverse.capture, 'After applying')}` : '<p class="muted">Not tested.</p>'}</section></div></article>`;
   }).join('');
   const untested = report.declarations.filter(d => !report.experiments.some(e => e.declarationId === d.id));
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Culprit · ${escape(report.state)}</title>
@@ -94,16 +94,16 @@ export function renderReport(report: Report): string {
   .article-head{align-items:start;flex-direction:column}
   }
 
-  </style></head><body><main><header><div class="brand">Culprit<span>Local CSS regression evidence</span></div><a href="report.json">Machine-readable report ↗</a></header>
+  </style></head><body><main><header><div class="brand">Culprit<span>CSS change report</span></div><a href="report.json">Report JSON ↗</a></header>
   <section class="summary"><div class="eyebrow">${escape(report.options.target)} · ${width} × ${height}</div><h1>${escape(report.state)}</h1>${report.reasons.map(reason => `<p>${escape(reason)}</p>`).join('')}
-  <p class="muted urls">Baseline: ${escape(report.options.base)}<br>Candidate: ${escape(report.options.head)}</p>${metrics(report.difference)}</section>
-  <div class="toolbar"><span class="muted">Green: target bounds · amber: fixed comparison region · pink: changed pixels</span><button id="outlines" type="button" aria-pressed="true">Hide outlines</button></div>
-  <div class="comparison">${shot(report.baseline, 'Baseline')}${shot(report.candidate, 'Candidate')}</div>
-  ${report.diffImage ? `<details><summary>Pixel difference · baseline versus candidate</summary><figure class="diff"><a href="${escape(report.diffImage)}"><img src="${escape(report.diffImage)}" alt="Changed pixels highlighted in pink" width="100%"></a></figure></details>` : ''}
-  ${report.unsupported.length ? `<article><h2>Unsupported input</h2><ul>${report.unsupported.map(reason => `<li>${escape(reason)}</li>`).join('')}</ul></article>` : ''}
-  <div class="toolbar"><h2>Declaration experiments</h2><span class="muted">${report.budget.used} / ${report.budget.limit} browser edits</span></div>
-  ${experiments || '<p class="muted">No experiments were run. See the result and input checks above.</p>'}
-  ${untested.length ? `<article><h2>Untested declarations</h2><ul>${untested.map(d => `<li><code>${escape(d.selector)} · ${escape(d.property)}: ${escape(d.baseline.value)} → ${escape(d.candidate.value)}</code></li>`).join('')}</ul></article>` : ''}
-  <section class="details"><h3>What this result establishes</h3><p class="muted">Measurements use exact pixels in the union of the original target bounds plus 4 px, and target geometry within 0.01 px. Surrounding pixels cover the rest of the viewport. Stability is sampled across three captures per state and fresh input loads; it is not a guarantee about future rendering. Each experiment changes one value in the original browser stylesheet and verifies restoration before closing its isolated context.</p><p class="muted">Reproduced impact means forward and reverse experiments matched the selected appearance without increasing the surrounding pixel difference. Candidate means incomplete verification. Inconclusive includes unsupported inputs, instability, unresolved interactions, and exhausted budgets. No result asserts a unique cause or a universally correct fix.</p><p class="muted">Chromium ${escape(report.environment.chromium)} · ${escape(report.environment.platform)} · Node ${escape(report.environment.node)} · ${escape(report.createdAt)}</p></section>
+  <p class="muted urls">Before: ${escape(report.options.base)}<br>After: ${escape(report.options.head)}</p>${metrics(report.difference)}</section>
+  <div class="toolbar"><span class="muted">Green: selected element · amber: measured area · pink: changed pixels</span><button id="outlines" type="button" aria-pressed="true">Hide outlines</button></div>
+  <div class="comparison">${shot(report.baseline, 'Before')}${shot(report.candidate, 'After')}</div>
+  ${report.diffImage ? `<details><summary>Changed pixels · before and after</summary><figure class="diff"><a href="${escape(report.diffImage)}"><img src="${escape(report.diffImage)}" alt="Changed pixels highlighted in pink" width="100%"></a></figure></details>` : ''}
+  ${report.unsupported.length ? `<article><h2>Unsupported changes</h2><ul>${report.unsupported.map(reason => `<li>${escape(reason)}</li>`).join('')}</ul></article>` : ''}
+  <div class="toolbar"><h2>CSS value tests</h2><span class="muted">${report.budget.used} / ${report.budget.limit} browser edits</span></div>
+  ${experiments || '<p class="muted">No CSS values were tested. See the reason above.</p>'}
+  ${untested.length ? `<article><h2>Untested CSS values</h2><ul>${untested.map(d => `<li><code>${escape(d.selector)} · ${escape(d.property)}: ${escape(d.baseline.value)} → ${escape(d.candidate.value)}</code></li>`).join('')}</ul></article>` : ''}
+  <section class="details"><h3>Checks</h3><p class="muted">Each test edits one CSS value in a temporary Chromium session, captures the result, then checks the browser reset. Your files stay untouched.</p><p class="muted">Matches require identical target pixels and no more than 0.01 px movement. The measured area covers both target bounds plus 4 px. Three captures per state and fresh page loads check stability.</p><p class="muted">Reproduced impact: both directions matched. Candidate: partial match or incomplete verification. Inconclusive: unsupported changes, unstable pages, unfinished tests, or unresolved combinations of CSS values. Results apply to these captures; several values can contribute to the same difference.</p><p class="muted">Chromium ${escape(report.environment.chromium)} · ${escape(report.environment.platform)} · Node ${escape(report.environment.node)} · ${escape(report.createdAt)}</p></section>
   </main><script>document.getElementById('outlines').addEventListener('click',function(){const hidden=document.body.classList.toggle('hide-boxes');this.textContent=hidden?'Show outlines':'Hide outlines';this.setAttribute('aria-pressed',String(!hidden));});</script></body></html>`;
 }

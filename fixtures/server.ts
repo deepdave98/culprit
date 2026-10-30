@@ -44,7 +44,7 @@ function html(name: FixtureName, side: 'base' | 'head') {
 <body><main>
   <header><a href="/">culprit / fixtures</a><span>SYNTHETIC · ${name}</span></header>
   <section class="fixture-heading"><p>CSS regression example</p><h1>${descriptions[name]}</h1>
-    <p>A controlled checkout page. This is a labeled test fixture, not an external validation.</p></section>
+    <p>Sample checkout page.</p></section>
   <section class="checkout" aria-label="Checkout preview">
     <div class="order-heading"><span>YOUR ORDER</span><span>01 ITEM</span></div>
     <div class="product"><div class="product-art" aria-hidden="true"><div class="notebook"></div></div>

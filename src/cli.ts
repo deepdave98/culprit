@@ -2,10 +2,17 @@
 import { parseArgs } from 'node:util';
 import { compare } from './engine.js';
 
-const usage = `culprit compare --base http://localhost:3000 --head http://localhost:3001 --target ".checkout-button"
+const usage = `Test which CSS changes made an element look different.
 
-Options: --out <empty directory>  --width 1280  --height 800  --budget 12  --interval 120
-Budget counts browser edits in both directions. Interval is milliseconds between stability samples.
+culprit compare --base http://localhost:3000 --head http://localhost:3001 --target ".checkout-button"
+
+  --out <directory>   Save the report to a new or empty directory
+  --width <pixels>    Viewport width (1280)
+  --height <pixels>   Viewport height (800)
+  --budget <edits>    Maximum CSS edits (12)
+  --interval <ms>     Time between captures (120)
+
+Each CSS value is tested in both directions; each direction costs one edit.
 Exit codes: 0 reproduced impact, 2 candidate or inconclusive, 1 invalid command or setup failure.`;
 
 try {

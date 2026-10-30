@@ -1,24 +1,19 @@
-# Experiment boundary
+# How it works
 
-The engine asks whether restoring one changed value restores a selected appearance in a captured state. It does not infer the best fix or rank a unique cause.
+1. Capture each page three times, then reload it in a fresh Chromium context. Compare pixels, DOM state, layout, computed styles, and stylesheet text. Reject unstable pages.
+2. Pair external stylesheets by order and URL path. Find changed CSS values in rules matching the target or its ancestors. PostCSS supplies the exact source spans.
+3. Revert one value in the after page with CDP’s `CSS.setStyleSheetText`. Capture the result, reset all stylesheets, and check that the browser returns to its initial state.
+4. Apply that value to a fresh before page. A value passes only when both directions match and neither adds differences outside the selected area.
 
-1. Open each local URL in an isolated Chromium context. Capture three times, then repeat in a fresh context. Compare pixels, DOM state, geometry, computed styles, and stylesheet text. Audit live CSSOM rules against the source too: CDP source text alone can miss JavaScript `insertRule` changes.
-2. Pair external stylesheets by link order and URL path/query. Parse their CSS with PostCSS. Reject changes to stylesheet structure; identify value differences whose declarations belong to target or ancestor matched-rule ranges.
-3. Open a fresh candidate context and require its captures to match the original. Splice a single baseline value into the captured stylesheet text with `CSS.setStyleSheetText`. The sheet identity, rule order, selector, media context, and priority stay in place.
-4. Capture the edited page. Compare against the baseline and the original candidate. Restore the entire original sheet and verify that the browser returns to the original state before closing the context.
-5. Repeat with the candidate value in a fresh baseline context. A result can be reproduced only when both directions match the selected appearance and neither increases the surrounding pixel difference.
+Each value gets a fresh browser context. CSS edits preserve selectors, rule order, media conditions, whitespace, and priority. Live CSSOM rules are checked against source text to catch JavaScript `insertRule` changes.
 
-The fixed region is the union of the original target rectangles with a four-pixel margin. This avoids cropping each element independently and hiding position or size changes. Geometry catches movement outside that region. The full viewport difference and all element bounds remain in the evidence.
+The measured area covers both target rectangles plus a 4px margin. A match requires exact pixels and no more than 0.01px movement. The report also records surrounding pixels and bounds for up to 2,000 elements.
 
-The budget counts directional value edits, not screenshots. Partial improvements remain candidates; single-declaration trials cannot resolve interacting values. An exhausted budget makes the overall report inconclusive even if an individual experiment has verified evidence.
+The budget counts CSS edits in both directions. Missing tests or failed browser resets leave the report inconclusive. Values are tested individually; combinations require further investigation. See [limits](usage.md#limits).
 
-## API references
+## APIs
 
-- [Playwright visual comparisons](https://playwright.dev/docs/test-snapshots): repeated screenshot checks and environment-dependent rendering.
-- [Playwright screenshot assertions](https://playwright.dev/docs/api/class-pageassertions): animations can be disabled by screenshot assertions. Culprit instead captures with animations allowed so sampled instability remains visible.
-- [Playwright CDPSession](https://playwright.dev/docs/api/class-cdpsession): browser protocol access.
-- [Chrome CSS protocol](https://chromedevtools.github.io/devtools-protocol/tot/CSS/): matched rules, stylesheet text, original source ranges, and in-memory edits. CDP ranges are zero-based and end-exclusive; report line/column values are one-based.
-- [BackstopJS](https://github.com/garris/BackstopJS): reference/candidate screenshot comparison and visual reports. Culprit's experiment step tests declaration values; it does not replace a regression suite.
-- [Percy](https://www.browserstack.com/docs/percy/overview/visual-testing-basics): screenshot capture, baseline comparison, and review. Culprit keeps its first experiment loop local.
+- [Playwright CDPSession](https://playwright.dev/docs/api/class-cdpsession)
+- [Chrome CSS protocol](https://chromedevtools.github.io/devtools-protocol/tot/CSS/)
 
-These sources informed the design. No implementation code was reused.
+CDP source ranges start at zero; report line and column numbers start at one. Range ends are exclusive. Animations stay enabled so repeated captures can detect changes.

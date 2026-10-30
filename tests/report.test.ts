@@ -28,17 +28,17 @@ function report(overrides: Partial<Report> = {}): Report {
 test('report displays measured evidence and artifact links from the engine', () => {
   const value = report();
   const html = renderReport(value);
-  assert.match(html, /Selected pixels changed<\/dt><dd>1,234<\/dd>/);
-  assert.match(html, /Pixels outside selection<\/dt><dd>987<\/dd>/);
-  assert.match(html, /Target geometry delta<\/dt><dd>12\.50 px<\/dd>/);
-  assert.match(html, /Elements with changed bounds<\/dt><dd>7<\/dd>/);
+  assert.match(html, /Changed pixels in target<\/dt><dd>1,234<\/dd>/);
+  assert.match(html, /Changed pixels outside target<\/dt><dd>987<\/dd>/);
+  assert.match(html, /Target size or position change<\/dt><dd>12\.50 px<\/dd>/);
+  assert.match(html, /Elements moved or resized<\/dt><dd>7<\/dd>/);
   for (const filename of ['baseline.png', 'baseline.json', 'candidate.png', 'candidate.json', 'difference.png', 'report.json']) {
     assert.ok(html.includes(`href="${filename}"`), filename);
   }
   assert.ok(html.includes('class="box target"'));
   assert.ok(html.includes('class="box region"'));
-  assert.ok(html.includes('No experiments were run.'));
-  assert.ok(!html.includes('Forward experiment screenshot'));
+  assert.ok(html.includes('No CSS values were tested.'));
+  assert.ok(!html.includes('After reverting screenshot'));
 });
 
 test('hostile selectors, CSS values, source URLs, and reasons remain escaped text', () => {
@@ -74,15 +74,15 @@ test('hostile selectors, CSS values, source URLs, and reasons remain escaped tex
 test('failed and unrun trials show errors and incomplete verification without measurements', () => {
   const change = declaration();
   const html = renderReport(report({ declarations: [change], experiments: [{
-    declarationId: change.id, state: 'Inconclusive', reason: 'The intervention did not complete.',
+    declarationId: change.id, state: 'Inconclusive', reason: 'The CSS test did not complete.',
     forward: { direction: 'forward', restored: false, error: 'The stylesheet changed during the experiment.' },
   }] }));
   assert.ok(html.includes('The stylesheet changed during the experiment.'));
   assert.ok(html.includes('No valid measurement.'));
-  assert.ok(html.includes('Browser restoration: not verified.'));
-  assert.ok(html.includes('Not run. Verification is incomplete.'));
-  assert.ok(!html.includes('Forward experiment screenshot'));
-  assert.ok(!html.includes('Reverse experiment screenshot'));
+  assert.ok(html.includes('Browser reset: not verified.'));
+  assert.ok(html.includes('Not tested.'));
+  assert.ok(!html.includes('After reverting screenshot'));
+  assert.ok(!html.includes('After applying screenshot'));
 });
 
 test('verified experiments and untested declarations show their actual states', () => {
@@ -97,8 +97,8 @@ test('verified experiments and untested declarations show their actual states', 
   assert.ok(html.includes('Matched in both directions.'));
   assert.ok(html.includes('href="forward.png"'));
   assert.ok(html.includes('href="reverse.png"'));
-  assert.ok(html.includes('Browser restoration: verified.'));
-  assert.ok(html.includes('Untested declarations'));
+  assert.ok(html.includes('Browser reset: verified.'));
+  assert.ok(html.includes('Untested CSS values'));
   assert.ok(html.includes('.untested · margin: 12px → 32px'));
   assert.ok(html.includes('2 / 2 browser edits'));
   assert.ok(html.includes('!important'));

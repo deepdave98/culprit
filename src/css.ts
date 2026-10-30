@@ -33,7 +33,7 @@ function readDeclaration(sheet: Sheet, node: Declaration, selector: string, cont
     throw new Error('Declaration source cannot be mapped without changing syntax.');
   }
   // PostCSS retains comments and whitespace in raw values. Its separate
-  // "between" and "important" fields stay untouched during an intervention.
+  // "between" and "important" fields stay untouched during an edit.
   const raw = node.raws.value;
   const value = raw && raw.value === node.value ? raw.raw : node.value;
   const start = declarationStart + node.prop.length + (node.raws.between ?? ':').length;
